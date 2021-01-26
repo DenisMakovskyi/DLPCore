@@ -11,6 +11,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import ua.com.wl.dlp.core.Constants
 import ua.com.wl.dlp.core.DLPCore
+import ua.com.wl.dlp.core.network.AnalyticsInterceptor
 import ua.com.wl.dlp.core.network.AuthInterceptor
 import ua.com.wl.dlp.core.network.SessionAuthenticator
 import ua.com.wl.dlp.data.api.*
@@ -54,6 +55,11 @@ val apiModule = module {
             retrofit = get(qualifier = named(Constants.DI_NAMED_REFRESH_RETROFIT))
         )
     }
+
+    factory {
+        AnalyticsInterceptor(androidContext())
+    }
+
     factory {
         HttpLoggingInterceptor().apply {
             level = if (DLPCore.debuggable) {
@@ -72,6 +78,7 @@ val apiModule = module {
             .followSslRedirects(false)
             .addInterceptor(interceptor = get<AuthInterceptor>())
             .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
+            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
@@ -86,6 +93,7 @@ val apiModule = module {
             .followRedirects(false)
             .followSslRedirects(false)
             .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
+            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
@@ -125,6 +133,7 @@ val apiModule = module {
             .addInterceptor(interceptor = get<AuthInterceptor>())
             .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
             .authenticator(authenticator = get<SessionAuthenticator>())
+            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
