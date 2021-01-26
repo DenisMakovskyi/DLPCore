@@ -2,20 +2,14 @@ package ua.com.wl.dlp.core.network
 
 import android.content.Context
 import android.os.Bundle
-import android.os.Parcelable
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.crashlytics.FirebaseCrashlytics
-import kotlinx.android.parcel.Parcelize
 import okhttp3.Interceptor
 import okhttp3.Response
-import okhttp3.internal.toHeaderList
 
 class AnalyticsInterceptor(
     context: Context
 ) : Interceptor {
-
-    @Parcelize
-    private data class Header(val name: String, val value: String) : Parcelable
 
     private val firebaseAnalytics = FirebaseAnalytics.getInstance(context)
     private val firebaseCrashlytics = FirebaseCrashlytics.getInstance()
@@ -29,12 +23,26 @@ class AnalyticsInterceptor(
         }
 
         val url = request.url.encodedPath
-        val headers = request.headers.toHeaderList().map { Header(it.name.utf8(), it.value.utf8()) }
+        val headers = request.headers
         val body = response.readErrorBody()
 
         val bundle = Bundle().apply {
             putString(FirebaseAnalytics.Param.METHOD, url)
-            putParcelableArray(FirebaseAnalytics.Param.ITEMS, headers.toTypedArray())
+
+            headers.names().forEachIndexed { index, s ->
+                val name = when (index) {
+                    0 -> FirebaseAnalytics.Param.ITEM_CATEGORY2
+                    1 -> FirebaseAnalytics.Param.ITEM_CATEGORY3
+                    2 -> FirebaseAnalytics.Param.ITEM_CATEGORY4
+                    3 -> FirebaseAnalytics.Param.ITEM_CATEGORY5
+                    else -> null
+                }
+
+                name?.let {
+                    putString(it, headers.value(index))
+                }
+            }
+
             putString(FirebaseAnalytics.Param.ITEM_CATEGORY, body)
         }
 
@@ -45,7 +53,7 @@ class AnalyticsInterceptor(
         }
 
         firebaseCrashlytics.log(url)
-        firebaseCrashlytics.log(headers.joinToString { it.name + ":" + it.value })
+        firebaseCrashlytics.log(headers.toString())
         firebaseCrashlytics.log(body)
 
         return response
