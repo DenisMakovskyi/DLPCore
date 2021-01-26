@@ -26,14 +26,16 @@ class AnalyticsInterceptor(
         val headers = request.headers.toString()
         val body = response.readErrorBody()
 
-        if (response.code == 401) {
-            val bundle = Bundle().apply {
-                putString(FirebaseAnalytics.Param.METHOD, url)
-                putString(FirebaseAnalytics.Param.CONTENT, headers)
-                putString(FirebaseAnalytics.Param.ITEM_CATEGORY, body)
-            }
+        val bundle = Bundle().apply {
+            putString(FirebaseAnalytics.Param.METHOD, url)
+            putString(FirebaseAnalytics.Param.CONTENT, headers)
+            putString(FirebaseAnalytics.Param.ITEM_CATEGORY, body)
+        }
 
+        if (response.code == 401) {
             firebaseAnalytics.logEvent("logout", bundle)
+        } else {
+            firebaseAnalytics.logEvent("request", bundle)
         }
 
         firebaseCrashlytics.log(url)
