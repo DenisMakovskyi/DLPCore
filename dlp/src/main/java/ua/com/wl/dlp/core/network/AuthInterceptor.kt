@@ -1,10 +1,10 @@
 package ua.com.wl.dlp.core.network
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
+import okhttp3.internal.closeQuietly
 import retrofit2.Retrofit
 import ua.com.wl.dlp.core.Constants
 import ua.com.wl.dlp.data.api.SessionApi
@@ -49,7 +49,7 @@ class AuthInterceptor constructor(
 
         return when (originalResponse.code) {
             HttpURLConnection.HTTP_UNAUTHORIZED, HttpURLConnection.HTTP_FORBIDDEN -> {
-                return runBlocking(Dispatchers.IO) {
+                return runBlocking {
                     val request = TokenRequest(corePreferences.authPrefs.refreshToken)
                     val response = api.refreshToken(request, appId)
                     if (!response.isSuccessful) {
@@ -58,7 +58,12 @@ class AuthInterceptor constructor(
                     val token = response.body()?.payload?.token
                     corePreferences.authPrefs = corePreferences.authPrefs.copy(authToken = token)
 
-                    chain.proceed(wrapRequest(originalRequest, token))
+                    runCatching {
+                        originalResponse.closeQuietly()
+                        chain.proceed(wrapRequest(originalRequest, token))
+                    }.getOrElse {
+                        originalResponse
+                    }
                 }
             }
             else -> originalResponse

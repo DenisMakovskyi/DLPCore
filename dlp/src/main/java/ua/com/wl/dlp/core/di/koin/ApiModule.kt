@@ -76,9 +76,9 @@ val apiModule = module {
             .readTimeout(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS)
             .followRedirects(false)
             .followSslRedirects(false)
+            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .addInterceptor(interceptor = get<AuthInterceptor>())
             .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
-            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
@@ -92,8 +92,8 @@ val apiModule = module {
             .readTimeout(TimeUnit.SECONDS.toMillis(10), TimeUnit.SECONDS)
             .followRedirects(false)
             .followSslRedirects(false)
-            .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
             .addInterceptor(interceptor = get<AnalyticsInterceptor>())
+            .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
@@ -130,10 +130,10 @@ val apiModule = module {
             .readTimeout(TimeUnit.SECONDS.toMillis(30), TimeUnit.SECONDS)
             .followRedirects(false)
             .followSslRedirects(false)
+            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
             .addInterceptor(interceptor = get<AuthInterceptor>())
             .addInterceptor(interceptor = get<HttpLoggingInterceptor>())
-            .authenticator(authenticator = get<SessionAuthenticator>())
-            .addInterceptor(interceptor = get<AnalyticsInterceptor>())
+//            .authenticator(authenticator = get<SessionAuthenticator>())
             .apply {
                 if (DLPCore.debuggable) {
                     addInterceptor(interceptor = ChuckerInterceptor(androidContext()))
